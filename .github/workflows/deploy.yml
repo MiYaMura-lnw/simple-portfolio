@@ -1,63 +1,31 @@
-# ชื่อของ Workflow ที่จะแสดงใน GitHub Actions UI
-name: Deploy Simple Portfolio to GitHub Pages
+name: Deploy to GitHub Pages
 
-# กำหนดเงื่อนไขการทำงานของ Workflow
 on:
-  # Workflow จะทำงานเมื่อมีการ push โค้ดไปยัง branch 'main'
   push:
-    branches:
-      - main
-  # อนุญาตให้รัน Workflow นี้ได้ด้วยตนเองจากหน้า GitHub Actions UI
-  workflow_dispatch:
+    branches: [main]
 
-# กำหนด Jobs ที่จะรันใน Workflow นี้
 jobs:
-  build_and_deploy:
-    # กำหนด Runner Environment ที่จะใช้รัน Job นี้
+  build-and-deploy:
     runs-on: ubuntu-latest
 
-    # ขั้นตอนต่างๆ ใน Job นี้
     steps:
-    # ขั้นตอนที่ 1: Checkout โค้ดจาก Repository
-    - name: Checkout repository
-      uses: actions/checkout@v4 # ใช้ Action สำหรับการดึงโค้ด
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # ขั้นตอนที่ 2: ตรวจสอบโครงสร้างไฟล์ (Basic Test)
-    # ตรวจสอบว่าไฟล์ที่จำเป็น (index.html, style.css, main.js) มีอยู่จริง
-    - name: Basic File Structure Test
-      run: |
-        echo "Checking for essential files..."
-        # ตรวจสอบว่า index.html มีอยู่
-        if [ -f index.html ]; then
-          echo "index.html found."
-        else
-          echo "Error: index.html not found!"
-          exit 1 # ถ้าไม่พบไฟล์ ให้ Workflow ล้มเหลว
-        fi
-        # ตรวจสอบว่า style.css มีอยู่
-        if [ -f style.css ]; then
-          echo "style.css found."
-        else
-          echo "Error: style.css not found!"
-          exit 1 # ถ้าไม่พบไฟล์ ให้ Workflow ล้มเหลว
-        fi
-        # ตรวจสอบว่า main.js มีอยู่
-        if [ -f main.js ]; then
-          echo "main.js found."
-        else
-          echo "Error: main.js not found!"
-          exit 1 # ถ้าไม่พบไฟล์ ให้ Workflow ล้มเหลว
-        fi
-        echo "All essential files found. Basic test passed."
+      - name: Check file structure
+        run: |
+          ls -la
+          test -f index.html
+          test -f style.css
+          echo "Basic file check passed."
 
-    # ขั้นตอนที่ 3: Deploy ไปยัง GitHub Pages
-    # ใช้ Action 'peaceiris/actions-gh-pages' ในการ Deploy
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        # ใช้ GITHUB_TOKEN ที่ GitHub เตรียมไว้ให้โดยอัตโนมัติสำหรับการอนุญาต
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        # กำหนด Directory ที่มีไฟล์ที่ต้องการ Deploy (ในที่นี้คือ Root Directory)
-        publish_dir: ./
-        # กำหนด branch ที่จะใช้สำหรับ GitHub Pages (โดยทั่วไปคือ gh-pages)
-        publish_branch: gh-pages
+      - name: Setup Node.js (optional for JS tools)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
